@@ -48,6 +48,8 @@ class TranslateService extends BaseApplicationComponent
 
     );
 
+    private $settings;
+
     /**
      * Initialize service.
      *
@@ -62,20 +64,29 @@ class TranslateService extends BaseApplicationComponent
         $this->_expressions['json'] = $this->_expressions['html'];
         $this->_expressions['atom'] = $this->_expressions['html'];
         $this->_expressions['rss'] = $this->_expressions['html'];
+
+        $this->settings = craft()->plugins->getPlugin('translate')->getSettings();
     }
 
     /**
      * Set translations.
      *
      * @param string $locale
-     * @param array  $translations
+     * @param array $translations
      *
      * @throws Exception if unable to write to file
      */
     public function set($locale, array $translations)
     {
         // Determine locale's translation destination file
-        $file = __DIR__.'/../translations/'.$locale.'.php';
+        $file = __DIR__ . '/../translations/' . $locale . '.php';
+
+        // If user has set his own path we save it there
+        if (isset($this->settings) && count($this->settings) && array_key_exists('translatePath',
+                $this->settings) && strlen($this->settings['translatePath'])) {
+
+            $file = $this->settings['translatePath'] . '/' . $locale . '.php';
+        }
 
         // Get current translation
         if ($current = @include($file)) {
@@ -159,8 +170,8 @@ class TranslateService extends BaseApplicationComponent
     /**
      * Open file and parse translate tags.
      *
-     * @param string               $path
-     * @param string               $file
+     * @param string $path
+     * @param string $file
      * @param ElementCriteriaModel $criteria
      *
      * @return array
@@ -191,7 +202,7 @@ class TranslateService extends BaseApplicationComponent
                     // Show translation in textfield
                     $field = craft()->templates->render('_includes/forms/text', array(
                         'id' => ElementHelper::createSlug($original),
-                        'name' => 'translation['.$original.']',
+                        'name' => 'translation[' . $original . ']',
                         'value' => $translation,
                         'placeholder' => $translation,
                     ));
@@ -208,7 +219,8 @@ class TranslateService extends BaseApplicationComponent
                     ));
 
                     // If searching, only return matches
-                    if ($criteria->search && !stristr($element->original, $criteria->search) && !stristr($element->translation, $criteria->search)) {
+                    if ($criteria->search && !stristr($element->original,
+                            $criteria->search) && !stristr($element->translation, $criteria->search)) {
                         continue;
                     }
 

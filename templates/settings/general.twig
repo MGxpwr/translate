@@ -1,0 +1,31 @@
+{% extends parentLayout | default("_layouts/cp") %}
+{% import "_includes/forms" as forms %}
+{% from "_includes/forms" import text -%}
+
+{% includeJsResource "translate/js/translate.js" %}
+
+{% if title is not defined %}
+    {% set title = craft.translate.getPluginName %}
+{% endif %}
+
+{% set fullPageForm = true %}
+
+{% block saveButton %}
+    <div class="buttons">
+        <div class="btngroup submit">
+            <input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+        </div>
+    </div>
+{% endblock %}
+
+{% set content %}
+
+    <input type="hidden" name="action" value="translate/settings/save">
+    <input type="hidden" name="redirect" value="translate/settings">
+    {{ forms.textField({
+        label: 'Translation Path' | t,
+        instructions: 'Enter the absolute path for saving the translations' | t,
+        id: 'translationPath',
+        name: 'translationPath',
+        value: settings['translationPath']}) }}
+{% endset %}
